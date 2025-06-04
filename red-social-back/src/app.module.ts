@@ -5,6 +5,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config'; // lo agrego el pr
 import { MongooseModule } from '@nestjs/mongoose'; // lo agrego el profe
 import { ThrottlerModule, ThrottlerGuard, ThrottlerModuleOptions } from '@nestjs/throttler'; // lo agrego el profe
 import { APP_GUARD } from '@nestjs/core'; // lo agrego el profe
+import { AuthModule } from './auth/auth.module'; //profe ultima clase
+import { UsersModule } from './users/users.module';
+import { PostsModule } from './posts/posts.module';
 
 @Module({
     imports: [
@@ -36,6 +39,10 @@ import { APP_GUARD } from '@nestjs/core'; // lo agrego el profe
             }),
             inject: [ConfigService],
         }),
+
+        AuthModule,
+        UsersModule,
+        PostsModule
     ],
 
     providers: [
