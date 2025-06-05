@@ -2,10 +2,11 @@ import {
     IsString,
     IsEmail,
     IsNotEmpty,
-    Length,
     MinLength,
     MaxLength,
     Matches,
+    IsOptional,
+    IsDateString
 } from  'class-validator';
 
 export class RegistroDto {
@@ -39,10 +40,11 @@ export class RegistroDto {
     @Matches(/(?=.*\d)/, { message: 'Debe tener un número' })
     password: string;
     
-    @IsNotEmpty({message: 'La fecha de nacimiento es obligatoria'})
-    fechaNacimiento: Date;
+    @IsNotEmpty({ message: 'La fecha de nacimiento es obligatoria' })
+    @IsDateString({}, { message: 'Debe tener formato YYYY-MM-DD' })
+    fechaNacimiento: string;
 
-    @IsNotEmpty({message: 'La descripción es obligatoria'})
-    @MinLength(10, {message: 'La descripción debe tener al menos 10 caracteres'})
+    @IsOptional()
+    @IsString({message: 'La descripción debe ser texto'})
     descripcion: string;
 }

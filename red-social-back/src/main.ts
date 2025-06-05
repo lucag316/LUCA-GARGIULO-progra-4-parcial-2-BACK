@@ -28,8 +28,8 @@ async function bootstrap() {
 
 
 
-
-    await app.listen(3000);
-    console.log("Servidor red-social-back corriendo en http://localhost:" + process.env.PORT);
+    const port = process.env.PORT || 3000;
+    await app.listen(port);
+    console.log(`Servidor red-social-back corriendo en http://localhost:${port}`);
 }
 bootstrap();
