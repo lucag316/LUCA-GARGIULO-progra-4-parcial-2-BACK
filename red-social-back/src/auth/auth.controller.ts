@@ -13,7 +13,7 @@ export class AuthController {
 
 
     // Ruta para registrar usuario
-    @Post('register')
+    @Post('registro')
     @UseInterceptors(FileInterceptor('imagenPerfil', { dest: './uploads' }))
     async register(
         @Body() registroDto: RegistroDto,
