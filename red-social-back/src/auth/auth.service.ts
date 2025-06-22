@@ -41,7 +41,7 @@ export class AuthService {
 
 
             // encriptar la contraseña con salt de 12 rounds
-            const saltRounds = 12;
+            const saltRounds = 12; // para la complejidad
             const hashedPassword = await bcrypt.hash(password, saltRounds);
 
             // crear el nuevo usuario
@@ -61,7 +61,7 @@ export class AuthService {
             // guardar el nuevo usuario en la base de datos
             const savedUser = await newUser.save();
 
-            // convertir objetis y eliminar la costraseña de la respuesta
+            // convertir objetos y eliminar la costraseña de la respuesta
             const userObject = savedUser.toObject();
             const {password:_, ... userWithoutPassword} = userObject;
 
