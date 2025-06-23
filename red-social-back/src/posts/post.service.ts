@@ -23,7 +23,7 @@ export class PostService {
         const finalImagenUrl = imagenUrl || createPostDto.imagenUrl;
         const newPost = new this.postModel({ 
             ...createPostDto, 
-            user: userId, 
+            autor: userId, 
             imagenUrl: finalImagenUrl,
             likes: []
         }); // si no quiero hacerlo de forma simplificada, lo hacemos con todo y no con ...

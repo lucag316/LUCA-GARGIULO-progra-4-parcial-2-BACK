@@ -14,7 +14,7 @@ export class PostController {
 
     // crear publicacion
     @Post()
-    @UseInterceptors(FileInterceptor('imagenPerfil', { dest: './uploads' }))
+    @UseInterceptors(FileInterceptor('imagenPost', { dest: './uploads' }))
     async create(
         @Body() createPostDto: CreatePostDto, 
         @Req() req: Request,
