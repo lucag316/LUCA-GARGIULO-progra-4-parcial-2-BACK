@@ -2,13 +2,13 @@ import { Controller, Post, Body, Get, Delete, Param, Query, Req, UseGuards, UseI
 import { PostService } from "./post.service";
 import { CreatePostDto } from "./dto/create-post.dto";
 import { GetPostDto } from "./dto/get-post.dto";
-//import { AuthGuard } from "@nestjs/passport";
+import { AuthGuard } from "@nestjs/passport";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { FileValidationPipe } from "src/common/pipes/file-validation.pipe";
 import { Request } from "express";
 
 @Controller('posts')
-//@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'))
 export class PostController {
     constructor(private readonly postService: PostService) {}
 
