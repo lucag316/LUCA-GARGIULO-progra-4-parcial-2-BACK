@@ -29,7 +29,7 @@ export class Post {
 
     @ApiProperty({example: '[64d5bf7f7f7f7f7f7f7f7f7f, 64d5bf7f7f7f7f7f7f7f7f7f]'})
     @Prop([{ type: MongooseSchema.Types.ObjectId, ref: 'User' }])
-    like: User[];
+    likes: User[];
 
     @ApiProperty({example: '2025-01-01T00:00:00.000Z'})
     @Prop({default: new Date()})

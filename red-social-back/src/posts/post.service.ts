@@ -119,4 +119,60 @@ export class PostService {
 
         return updatePost;
     }
+
+    async addLike(postId: string, usuarioId: string) : Promise<Post>{
+
+        if (!Types.ObjectId.isValid(postId)) {
+            throw new NotFoundException('El ID de post no es valido');
+        }
+
+
+        const post = await this.findOne(postId);
+
+        //verificar si el usuario ya dio like a la publicacion
+        if (post.likes && post.likes.some(like => like?.toString() === usuarioId)) {
+            throw new ForbiddenException('Ya has dado like a esta publicacion');
+        }
+
+        const updatePost = await this.postModel.findByIdAndUpdate(
+            postId,
+            {$push: {likes: usuarioId}},
+            {new: true}
+        ).exec();
+
+        if (!updatePost) {
+            throw new NotFoundException('Pno se pudo cencontra la publiicacion para actualizar');
+        }
+
+
+
+        return updatePost;
+    }
+
+    async removeLike(postId: string, usuarioId: string) : Promise<Post>{
+
+        if (!Types.ObjectId.isValid(postId)) {
+            throw new NotFoundException('El ID de post no es valido');
+        }
+
+        const post = await this.findOne(postId);
+
+        //verificar si el usuario ya dio like a la publicacion
+        if (!post.likes || !post.likes.some(like => like?.toString() === usuarioId)) {
+            throw new ForbiddenException('No has dado like a esta publicacion');
+        }
+
+        const updatePost = await this.postModel.findByIdAndUpdate(
+            postId,
+            {$pull: {likes: usuarioId}},
+            {new: true}
+        ).exec();
+
+        if (!updatePost) {
+            throw new NotFoundException('Pno se pudo cencontra la publiicacion para actualizar');
+        }
+
+        return updatePost;
+    }
+
 }
