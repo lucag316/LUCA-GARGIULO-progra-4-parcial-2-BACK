@@ -7,12 +7,14 @@ import { Post, PostDocument } from './schemas/post.schema';
 import { CreatePostDto } from './dto/create-post.dto';
 import { GetPostDto, SortBy } from './dto/get-post.dto';
 import { AuthService } from 'src/auth/auth.service';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class PostService {
     constructor(
         @InjectModel(Post.name) private postModel: Model<PostDocument>,
-        private authService: AuthService
+        private authService: AuthService,
+        private usersService: UsersService
     ) {}
 
     async create(createPostDto: CreatePostDto, userId: string, imagenUrl?: string): Promise<Post> {
@@ -70,5 +72,51 @@ export class PostService {
 
         return { posts, total };
     }
-}
 
+    async findOne(id: string): Promise<Post> {
+
+        if (!Types.ObjectId.isValid(id)) {
+            throw new NotFoundException('El ID de post no es valido');
+        }
+
+        const post = await this.postModel.findOne({
+            _id: id,
+            estaEliminado: false
+        }).populate('autor', 'username nombre, apellido imagenPerfil').exec();
+
+        if (!post) {
+            throw new NotFoundException('Post no encontrado');
+        }
+        return post;
+    }
+
+    async softDelete(id: string, usuarioId: string) : Promise<Post>{
+
+        if (!Types.ObjectId.isValid(id)) {
+            throw new NotFoundException('El ID de post no es valido');
+        }
+
+        const post = await this.findOne(id);
+
+        //verificar si el usuario es el autor o un administrador
+        const user = await this.usersService.findById(usuarioId); // el profe lo tiene en authsService pero yo en userService porque vi que es mejor separarlo
+        const isAdmin = user && user.perfil ? user.perfil.includes('administrador'): false;
+        const isAutor = post.autor ? post.autor.toString() === usuarioId : false;
+
+        if (!isAdmin && !isAutor) {
+            throw new ForbiddenException('No tienes permiso para eliminar este post');
+        }
+
+        const updatePost = await this.postModel.findByIdAndUpdate(
+            id,
+            {estaEliminado: true},
+            {new: true}
+        ).exec();
+
+        if (!updatePost) {
+            throw new NotFoundException('Pno se pudo cencontra la publiicacion para actualizar');
+        }
+
+        return updatePost;
+    }
+}

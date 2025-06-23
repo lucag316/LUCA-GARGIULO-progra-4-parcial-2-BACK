@@ -17,4 +17,8 @@ export class UsersService {
             $or: [{ email: value.toLowerCase() }, { username: value }],
         });
     }
+
+    async findById(userId: string): Promise<User | null> {
+        return this.userModel.findById(userId).exec();
+    }
 }
