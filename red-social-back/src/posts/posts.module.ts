@@ -5,13 +5,14 @@ import { PostController } from './posts.controller';
 import { PostService } from './post.service';
 import { Post, PostSchema } from './schemas/post.schema';
 import { UsersModule } from 'src/users/users.module';
-import { Mongoose } from 'mongoose';
+import { AuthModule } from 'src/auth/auth.module';
 
 
 @Module({
     imports: [
         MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
-        UsersModule
+        UsersModule,
+        AuthModule
     ],
     controllers: [PostController],
     providers: [PostService],
