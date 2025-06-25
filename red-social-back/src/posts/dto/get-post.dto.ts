@@ -4,16 +4,15 @@ import { ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 
 export enum SortBy{
-    DATE = 'date',
+    FECHA = 'fecha',
     LIKES = 'likes'
 }
 
 export class GetPostDto{
-    @ApiPropertyOptional({enum: SortBy, default: SortBy.DATE, description: 'Ordenamiento por fecha o likes'})
+    @ApiPropertyOptional({enum: SortBy, default: SortBy.FECHA, description: 'Ordenamiento por fecha o likes'})
     @IsOptional({message: 'El ordenamiento es opcional'})
-    @IsString({message: 'El ordenamiento debe ser texto'})
     @IsEnum(SortBy)
-    sortBy?: SortBy = SortBy.DATE;
+    orden?: SortBy = SortBy.FECHA;
 
     @ApiPropertyOptional({description: 'Filtrar por ID de usuario'})
     @IsString({message: 'El ID de usuario debe ser texto'})

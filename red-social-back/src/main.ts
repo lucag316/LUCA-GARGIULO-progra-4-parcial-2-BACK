@@ -25,7 +25,13 @@ async function bootstrap() {
 
     // habilitar CORS
 
-    app.enableCors()
+    // CORS
+    app.enableCors({
+        origin: 'http://localhost:4200',
+        credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+    });
 
 
 
@@ -38,6 +44,7 @@ async function bootstrap() {
         .setTitle('API de Ejemplo')
         .setDescription('Documentación de la API')
         .setVersion('1.0')
+        .addBearerAuth()
         .addTag('users') // Etiqueta para agrupar los endpoints
         .build();
 

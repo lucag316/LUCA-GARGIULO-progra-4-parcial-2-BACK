@@ -33,7 +33,7 @@ export class PostService {
 
     async findAll(getPostDto: GetPostDto): Promise<{posts: Post[]; total: number}> {
 
-        const { sortBy, usuarioId, offset = 0, limit = 10} = getPostDto;
+        const { orden, usuarioId, offset = 0, limit = 10} = getPostDto;
         
         // consilta base - excluir publicaciones eliminadas
         const query = this.postModel.find({ estaEliminado: false });
@@ -47,8 +47,8 @@ export class PostService {
         }
 
         // ordenar por fecha o cantidad de likes
-        if ( sortBy === SortBy.LIKES) {
-            query.sort({ 'likes.length': -1 , 'fechaCreacion': -1 });
+        if (orden === SortBy.LIKES) {
+            query.sort({ 'likes.length': -1, 'fechaCreacion': -1 });
         } else {
             query.sort({ 'fechaCreacion': -1 });
         }
