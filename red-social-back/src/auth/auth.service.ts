@@ -61,6 +61,16 @@ export class AuthService {
             // guardar el nuevo usuario en la base de datos
             const savedUser = await newUser.save();
 
+            // Generar token
+            const payload = {
+                sub: savedUser._id,
+                email: savedUser.email,
+                username: savedUser.username,
+                perfil: savedUser.perfil,
+            };
+
+    const token = this.jwtService.sign(payload);
+
             // convertir objetos y eliminar la costraseña de la respuesta
             const userObject = savedUser.toObject();
             const {password:_, ... userWithoutPassword} = userObject;
@@ -70,7 +80,8 @@ export class AuthService {
                 message: 'Usuario registrado correctamente',
                 data: {
                     user: userWithoutPassword,
-                    userId: (savedUser._id as Types.ObjectId).toString()
+                    userId: (savedUser._id as Types.ObjectId).toString(),
+                    token
                 },
             };
         }catch(error){

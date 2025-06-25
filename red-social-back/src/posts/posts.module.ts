@@ -10,8 +10,11 @@ import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
     imports: [
+        // Importa el schema de Mongoose: define cómo se guardan las publicaciones en MongoDB
         MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
+        // Importa el módulo de usuarios para usar su servicio (necesario en softDelete, por ejemplo)
         UsersModule,
+        // Importa el módulo de autenticación (si usás validación extra de JWT u otros helpers)
         AuthModule
     ],
     controllers: [PostController],
