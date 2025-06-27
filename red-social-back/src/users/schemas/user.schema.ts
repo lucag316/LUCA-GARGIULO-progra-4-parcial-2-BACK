@@ -1,15 +1,33 @@
 
+/**
+ * Esquema Mongoose para el modelo `User`.
+ * Representa la estructura del documento de usuario en la base de datos.
+ * Incluye:
+ * - Datos personales: nombre, apellido, email, username, fecha de nacimiento, descripción.
+ * - Autenticación: password.
+ * - Imagen de perfil (opcional).
+ * - Rol/perfil de usuario (por defecto "usuario").
+ * - Estado activo/inactivo (baja lógica).
+ * 
+ * Configuración adicional:
+ * - timestamps: crea automáticamente `createdAt` y `updatedAt`.
+ * - versionKey: desactivado para evitar el campo `__v`.
+ * - toJSON/toObject con virtuals habilitados.
+ */
+
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
 import { ApiProperty } from "@nestjs/swagger";
 
+// Tipo para usar en servicios con tipado fuerte
 export type UserDocument = User & Document;
 
+// Decorador de esquema con configuración global
 @Schema({ 
-    timestamps: true,
-    versionKey: false,
-    toJSON: {virtuals: true},
-    toObject: {virtuals: true}
+    timestamps: true, // Agrega createdAt y updatedAt automáticamente
+    versionKey: false, // Evita que se agregue __v
+    toJSON: {virtuals: true}, // Habilita campos virtuales en respuestas JSON
+    toObject: {virtuals: true}  // También para .toObject()
 })
 
 export class User {
@@ -37,11 +55,11 @@ export class User {
     @Prop()
     descripcion: string;
 
-    // SOLUCIÓN PARA imagenPerfil:
+    
     @Prop({ 
-        type: String,  // Tipo explícito para Mongoose
-        default: null, // Valor por defecto
-        required: false // Campo opcional
+        type: String,  
+        default: null, 
+        required: false 
     })
     imagenPerfil?: string; // El "?" indica que es opcional en TypeScript
 

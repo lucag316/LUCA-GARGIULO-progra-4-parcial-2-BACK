@@ -1,13 +1,28 @@
 
+/**
+ * Servicio de autenticación de usuarios.
+ * Se encarga de registrar, autenticar y obtener datos del usuario.
+ * Funciones:
+ * - `register`: crea un nuevo usuario, encripta la contraseña, manejo de imagen de perfil y genera un JWT.
+ * - `login`: verifica credenciales, genera y devuelve un token.
+ * - `getPerfilUsuario`: obtiene datos del perfil, excluyendo la contraseña.
+ * - `getPublicacionesUsuario`: devuelve las últimas publicaciones de un usuario con comentarios.
+ * 
+ * Características clave:
+ * - Validación de usuarios únicos (email/username)
+ * - Encriptación BCrypt para contraseñas
+ * - Generación de tokens JWT
+ * - Manejo de errores específicos (Conflict, Unauthorized)
+ * - Transformación segura de datos (elimina password en respuestas)
+ */
+
 import { Injectable, ConflictException, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { User, UserDocument, UserSchema } from 'src/users/schemas/user.schema';
+import { User, UserDocument } from 'src/users/schemas/user.schema';
 import { RegistroDto } from './dto/registro.dto';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
-
-
 
 @Injectable()
 export class AuthService {
@@ -17,6 +32,15 @@ export class AuthService {
         private jwtService: JwtService
     ) {}
 
+    /**
+     * Registra un nuevo usuario en la base de datos:
+     * - Verifica si el username o email ya están en uso.
+     * - Encripta la contraseña.
+     * - Guarda los datos del usuario con la imagen de perfil si existe.
+     * @param registroDto Datos validados del usuario
+     * @param imagenPerfilUrl (Opcional) Ruta de la imagen de perfil
+     * @returns {Object} Usuario creado + token JWT (sin password)
+     */
     async register(registroDto: RegistroDto, imagenPerfilUrl?:string | null): Promise<any> {
         try{
             const { email, username, password } = registroDto;
@@ -69,7 +93,7 @@ export class AuthService {
                 perfil: savedUser.perfil,
             };
 
-    const token = this.jwtService.sign(payload);
+            const token = this.jwtService.sign(payload);
 
             // convertir objetos y eliminar la costraseña de la respuesta
             const userObject = savedUser.toObject();
@@ -85,7 +109,8 @@ export class AuthService {
                 },
             };
         }catch(error){
-            // error de validacion de mongoose
+
+            // Validación de esquema Mongoose
             if(error.name === 'ValidationError') {
                 const validationError = Object.values(error.errors).map(
                     (err:any) => err.message
@@ -96,7 +121,6 @@ export class AuthService {
                     errors: validationError 
                 });
             }
-
 
             // Error por campo duplicado
             if (error.code === 11000) {
@@ -110,11 +134,17 @@ export class AuthService {
 
             // Otros errores inesperados
             throw new BadRequestException('Error interno al registrar usuario');
-
         }
     }
 
-    
+    /**
+     * Inicia sesión:
+     * - Verifica si el usuario o email existen.
+     * - Compara la contraseña ingresada con la hash.
+     * @param correoOrUsername Email o nombre de usuario
+     * @param password Contraseña sin encriptar
+     * @returns {Object} Datos del usuario + token JWT
+     */
     async login(correoOrUsername: string, password: string) {
         const user = await this.userModel.findOne({
             $or: [
@@ -159,35 +189,46 @@ export class AuthService {
         };
     }
 
+    /**
+     * Obtiene perfil de usuario sin información sensible
+     * @param userId ID del usuario
+     * @returns Perfil sin campo password
+     */
     async getPerfilUsuario(userId: string) {
     return this.userModel.findById(userId).select('-password');
     }
 
+    /**
+     * Obtiene las últimas publicaciones de un usuario
+     * @param userId ID del usuario
+     * @param limit Límite de publicaciones (default: 3)
+     * @returns Publicaciones con sus comentarios
+     */
     async getPublicacionesUsuario(userId: string, limit: number = 3) {
-    return this.userModel.aggregate([
-        { $match: { _id: new Types.ObjectId(userId) } },
-        {
-        $lookup: {
-            from: 'publicaciones', // Nombre de tu colección de publicaciones
-            localField: '_id',
-            foreignField: 'autor._id',
-            as: 'publicaciones',
-            pipeline: [
-            { $match: { estaEliminado: false } },
-            { $sort: { fechaCreacion: -1 } },
-            { $limit: limit },
+        return this.userModel.aggregate([
+            { $match: { _id: new Types.ObjectId(userId) } },
             {
                 $lookup: {
-                from: 'comentarios',
-                localField: '_id',
-                foreignField: 'publicacionId',
-                as: 'comentarios',
+                    from: 'publicaciones', 
+                    localField: '_id',
+                    foreignField: 'autor._id',
+                    as: 'publicaciones',
+                    pipeline: [
+                        { $match: { estaEliminado: false } },
+                        { $sort: { fechaCreacion: -1 } },
+                        { $limit: limit },
+                        {
+                            $lookup: {
+                            from: 'comentarios',
+                            localField: '_id',
+                            foreignField: 'publicacionId',
+                            as: 'comentarios',
+                            },
+                        },
+                    ],
                 },
             },
-            ],
-        },
-        },
-        { $project: { publicaciones: 1 } },
-    ]);
+            { $project: { publicaciones: 1 } },
+        ]);
     }
 }

@@ -1,7 +1,24 @@
+/**
+ * Servicio de usuarios.
+ * Encargado de la gestión y obtención de datos del usuario desde la base de datos.
+ *
+ * Funcionalidades:
+ * - Crear un nuevo usuario (`create`).
+ * - Buscar por email o username (`findByCorreoOrUsuario`).
+ * - Obtener un usuario por ID (`findById`).
+ * - Obtener datos del usuario autenticado, sin contraseña (`getCurrentUser`).
+ * - Obtener últimas publicaciones del usuario (`getUserPosts`).
+ * 
+ * Características:
+ * - Elimina información sensible (password) en respuestas
+ * - Formatea URLs de imágenes de perfil
+ * - Integración con el modelo de Posts
+ * - Manejo de errores específicos (NotFoundException)
+ */
 
 import { Injectable, NotFoundException  } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { User, UserDocument } from './schemas/user.schema';
 import { Post } from 'src/posts/schemas/post.schema';
 
@@ -9,23 +26,44 @@ import { Post } from 'src/posts/schemas/post.schema';
 export class UsersService {
     constructor(
         @InjectModel(User.name) private userModel: Model<UserDocument>,
-        @InjectModel(Post.name) private postModel: Model<Post> // Inyectamos el modelo de Post
+        @InjectModel(Post.name) private postModel: Model<Post> // Modelo de publicaciones
     ) {}
 
+    /**
+     * Crea un nuevo usuario en la base de datos.
+     * @param data Datos del usuario a crear
+     * @returns Usuario creado
+     */
     async create(data: Partial<User>) {
         return this.userModel.create(data);
     }
 
+    /**
+     * Busca un usuario por email o nombre de usuario.
+     * @param value Email o username a buscar
+     * @returns Usuario encontrado o null
+     */
     async findByCorreoOrUsuario(value: string) {
         return this.userModel.findOne({
             $or: [{ email: value.toLowerCase() }, { username: value }],
         });
     }
 
+    /**
+     * Busca un usuario por su ID.
+     * @param userId ID del usuario a buscar
+     * @returns Usuario encontrado o null
+     */
     async findById(userId: string): Promise<User | null> {
         return this.userModel.findById(userId).exec();
     }
 
+    /**
+     * Obtiene el perfil completo del usuario actual (sin password)
+     * @param userId ID del usuario autenticado
+     * @returns Perfil del usuario con URL completa de imagen
+     * @throws NotFoundException si el usuario no existe
+     */
     async getCurrentUser(userId: string): Promise<User> {
         const user = await this.userModel.findById(userId)
             .select('-password')
@@ -44,10 +82,12 @@ export class UsersService {
         return user as User;
     }
 
-    private getBaseUrl(): string {
-        return process.env.BASE_URL || 'http://localhost:3000';
-    }
-
+    /**
+     * Obtiene las últimas publicaciones de un usuario
+     * @param userId ID del usuario
+     * @param limit Límite de publicaciones a retornar (default: 3)
+     * @returns Array de publicaciones con datos del autor
+     */
     async getUserPosts(userId: string, limit: number = 3): Promise<any> {
         return this.postModel
             .find({ autor: userId, isActive: true })
@@ -56,5 +96,13 @@ export class UsersService {
             .populate('autor', 'nombre apellido username imagenPerfil')
             .lean()
             .exec();
+    }
+
+    /** DESPUES LA PUEDO HACER FUNCIONAR
+     * Devuelve la base URL de la API para construir rutas públicas.
+     * Se usa en `imagenPerfil`, si querés parametrizar el host más adelante.
+     */
+    private getBaseUrl(): string {
+        return process.env.BASE_URL || 'http://localhost:3000';
     }
 }
