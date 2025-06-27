@@ -38,6 +38,29 @@ export class Post {
     @ApiProperty({example: '2025-01-01T00:00:00.000Z'})
     @Prop({default: new Date()})
     fechaActualizacion: Date;
+
+    @ApiProperty({
+        example: [
+        {
+            contenido: 'Buen post!',
+            autor: '64d5bf7f7f7f7f7f7f7f7f7f',
+            fechaCreacion: '2025-01-01T00:00:00.000Z'
+        }
+        ]
+    })
+    @Prop([
+        {
+        contenido: { type: String, required: true },
+        autor: { type: MongooseSchema.Types.ObjectId, ref: 'User', required: true },
+        fechaCreacion: { type: Date, default: Date.now }
+        }
+    ])
+    comentarios: {
+        contenido: string;
+        autor: User;
+        fechaCreacion: Date;
+    }[];
 }
+
 
 export const PostSchema = SchemaFactory.createForClass(Post);

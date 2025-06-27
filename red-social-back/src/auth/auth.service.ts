@@ -152,4 +152,36 @@ export class AuthService {
             },
         };
     }
+
+    async getPerfilUsuario(userId: string) {
+    return this.userModel.findById(userId).select('-password');
+    }
+
+    async getPublicacionesUsuario(userId: string, limit: number = 3) {
+    return this.userModel.aggregate([
+        { $match: { _id: new Types.ObjectId(userId) } },
+        {
+        $lookup: {
+            from: 'publicaciones', // Nombre de tu colección de publicaciones
+            localField: '_id',
+            foreignField: 'autor._id',
+            as: 'publicaciones',
+            pipeline: [
+            { $match: { estaEliminado: false } },
+            { $sort: { fechaCreacion: -1 } },
+            { $limit: limit },
+            {
+                $lookup: {
+                from: 'comentarios',
+                localField: '_id',
+                foreignField: 'publicacionId',
+                as: 'comentarios',
+                },
+            },
+            ],
+        },
+        },
+        { $project: { publicaciones: 1 } },
+    ]);
+    }
 }

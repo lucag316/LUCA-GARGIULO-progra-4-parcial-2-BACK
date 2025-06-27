@@ -6,9 +6,12 @@ import { AuthGuard } from "@nestjs/passport"; // Protección con JWT
 import { FileInterceptor } from "@nestjs/platform-express";
 import { FileValidationPipe } from "src/common/pipes/file-validation.pipe";
 import { Request } from "express"; // Para acceder a req.user desde JWT
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { isValidObjectId } from "mongoose";
+import { BadRequestException } from "@nestjs/common";
 
 @Controller('posts')
-@UseGuards(AuthGuard('jwt')) // Protege todas las rutas del controlador con JWT
+@UseGuards(JwtAuthGuard) // Protege todas las rutas del controlador con JWT
 export class PostController {
     constructor(private readonly postService: PostService) {}
 
@@ -41,6 +44,31 @@ export class PostController {
     @Get()
     async findAll(@Query() getPostDto: GetPostDto) {
         return this.postService.findAll(getPostDto);  // Llama al servicio para filtrar, ordenar y paginar
+    }
+
+    /**
+     * GET /posts/user/:userId
+     * Obtiene las publicaciones de un usuario específico.
+     */
+    @Get('user/:userId')
+    async getPostsByUser(
+        @Param('userId') userId: string,
+        @Query('limit') limit: number = 3
+    ) {
+    if (!isValidObjectId(userId)) {
+        throw new BadRequestException('ID de usuario inválido');
+    }
+
+    return this.postService.findByUser(userId, limit);
+    }
+    
+    /**
+     * GET /posts/:id
+     * Obtiene una publicación específica por su ID.
+     */
+    @Get(':id')
+    async findOne(@Param('id') id: string) {
+        return this.postService.findOne(id);
     }
 
     /**

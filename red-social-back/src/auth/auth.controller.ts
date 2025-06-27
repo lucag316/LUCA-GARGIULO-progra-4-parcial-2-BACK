@@ -1,10 +1,12 @@
 
-import { Controller, Post, Body, UseInterceptors, UploadedFile } from "@nestjs/common";
+import { Controller, Post, Body, UseInterceptors, UploadedFile, 
+    Get, UseGuards, Req, NotFoundException  } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { RegistroDto } from "./dto/registro.dto";
 import { LoginDto } from "./dto/login.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { FileValidationPipe } from "src/common/pipes/file-validation.pipe";
+import { AuthGuard } from "@nestjs/passport";
 
 
 @Controller('auth')
@@ -31,5 +33,7 @@ export class AuthController {
         const { correoOrUsername, password } = loginDto;
         return this.authService.login(correoOrUsername, password);
     }
+
+    
 }
 
