@@ -179,7 +179,7 @@ export class PostService {
         .exec();
     }
 
-    async softDelete(id: string, usuarioId: string) : Promise<Post>{
+    /*async softDelete(id: string, usuarioId: string) : Promise<Post>{
 
         if (!Types.ObjectId.isValid(id)) {
             throw new NotFoundException('El ID de post no es valido');
@@ -207,6 +207,46 @@ export class PostService {
         }
 
         return updatePost;
+    }*/
+
+    async softDelete(id: string, userId: string): Promise<Post> {
+        // 1. Validar que el ID sea válido
+        if (!Types.ObjectId.isValid(id)) {
+            throw new NotFoundException('ID de publicación no válido');
+        }
+
+        // 2. Buscar la publicación
+        const post = await this.postModel.findById(id).exec();
+        if (!post) {
+            throw new NotFoundException('Publicación no encontrada');
+        }
+
+        // 3. Verificar permisos (autor o admin)
+        const user = await this.usersService.findById(userId);
+        const isAdmin = user?.perfil === 'administrador';
+        
+        // Comparación segura del autor (usando toString() para ObjectId)
+        const isAuthor = post.autor.toString() === userId;
+
+        if (!isAdmin && !isAuthor) {
+            throw new ForbiddenException('No tienes permiso para eliminar esta publicación');
+        }
+
+        // 4. Realizar el soft delete
+        const updatedPost = await this.postModel.findByIdAndUpdate(
+            id,
+            { 
+                estaEliminado: true,
+                fechaActualizacion: new Date() // Actualizar fecha de modificación
+            },
+            { new: true } // Devuelve el documento actualizado
+        ).exec();
+
+        if (!updatedPost) {
+            throw new NotFoundException('No se pudo eliminar la publicación');
+        }
+
+        return updatedPost;
     }
 
     async addLike(postId: string, usuarioId: string) : Promise<Post>{
