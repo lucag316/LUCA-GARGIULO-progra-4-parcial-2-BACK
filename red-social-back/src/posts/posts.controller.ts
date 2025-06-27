@@ -1,20 +1,31 @@
-import { Controller, Post, Body, Get, Delete, Param, Query, Req, UseGuards, UseInterceptors, UploadedFile } from "@nestjs/common";
+/**
+ * Controlador de publicaciones (`/posts`).
+ *
+ * Maneja todas las rutas relacionadas a publicaciones:
+ * - Crear post (con imagen opcional)
+ * - Listar publicaciones con filtros y paginación
+ * - Obtener publicaciones por usuario o por ID
+ * - Dar/Quitar "Me gusta"
+ * - Baja lógica (eliminar sin borrar)
+ *
+ * Todas las rutas están protegidas con `JwtAuthGuard`, por lo tanto solo usuarios autenticados pueden acceder.
+ */
+
+import { Controller, Post, Body, Get, Delete, Param, Query, Req, UseGuards, UseInterceptors, UploadedFile,BadRequestException } from "@nestjs/common";
 import { PostService } from "./post.service";
 import { CreatePostDto } from "./dto/create-post.dto";
 import { GetPostDto } from "./dto/get-post.dto";
-import { AuthGuard } from "@nestjs/passport"; // Protección con JWT
 import { FileInterceptor } from "@nestjs/platform-express";
 import { FileValidationPipe } from "src/common/pipes/file-validation.pipe";
 import { Request } from "express"; // Para acceder a req.user desde JWT
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { isValidObjectId } from "mongoose";
-import { BadRequestException } from "@nestjs/common";
 
 @Controller('posts')
-@UseGuards(JwtAuthGuard) // Protege todas las rutas del controlador con JWT
+@UseGuards(JwtAuthGuard) // // Aplica el guard a todas las rutas del controlador / Protege todas las rutas del controlador con JWT
 export class PostController {
-    constructor(private readonly postService: PostService) {}
 
+    constructor(private readonly postService: PostService) {}
     
     /**
     * POST /posts
@@ -48,18 +59,19 @@ export class PostController {
 
     /**
      * GET /posts/user/:userId
-     * Obtiene las publicaciones de un usuario específico.
+     * Devuelve publicaciones activas de un usuario específico.
+     * Límite configurable (default: 3).
      */
     @Get('user/:userId')
     async getPostsByUser(
-        @Param('userId') userId: string,
-        @Query('limit') limit: number = 3
-    ) {
-    if (!isValidObjectId(userId)) {
-        throw new BadRequestException('ID de usuario inválido');
-    }
+            @Param('userId') userId: string,
+            @Query('limit') limit: number = 3
+        ) {
+        if (!isValidObjectId(userId)) {
+            throw new BadRequestException('ID de usuario inválido');
+        }
 
-    return this.postService.findByUser(userId, limit);
+        return this.postService.findByUser(userId, limit);
     }
     
     /**

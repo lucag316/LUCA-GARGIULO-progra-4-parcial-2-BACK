@@ -1,28 +1,37 @@
+/**
+ * Módulo de publicaciones (`PostsModule`).
+ * 
+ * Este módulo gestiona todo lo relacionado a las publicaciones:
+ * - Define el esquema Mongoose `Post`.
+ * - Registra el controlador y el servicio correspondiente.
+ * - Importa los módulos de usuarios y autenticación para resolver dependencias.
+ * 
+ * Se usa `forwardRef` para romper la dependencia circular entre `PostsModule` y `UsersModule`.
+ */
 
-import { Module } from '@nestjs/common';
+
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PostController } from './posts.controller';
 import { PostService } from './post.service';
 import { Post, PostSchema } from './schemas/post.schema';
-//import { UsersModule } from 'src/users/users.module';
 import { AuthModule } from 'src/auth/auth.module';
-import { forwardRef } from '@nestjs/common';
 import { UsersModule } from 'src/users/users.module';
 
 @Module({
     imports: [
         // Importa el schema de Mongoose: define cómo se guardan las publicaciones en MongoDB
         MongooseModule.forFeature([{ name: Post.name, schema: PostSchema }]),
-        // Importa el módulo de usuarios para usar su servicio (necesario en softDelete, por ejemplo)
-        //UsersModule,
+        
+        // Importa UsersModule usando forwardRef (por dependencia circular en servicios)
         forwardRef(() => UsersModule),
-        // Importa el módulo de autenticación (si usás validación extra de JWT u otros helpers)
-        //AuthModule
+        
+        // Importa AuthModule usando forwardRef (por uso en validaciones o JWT helpers)
         forwardRef(() => AuthModule),
     ],
-    controllers: [PostController],
-    providers: [PostService],
-    exports: [PostService]
+    controllers: [PostController], // Define las rutas disponibles
+    providers: [PostService], // Servicio que contiene la lógica de publicaciones
+    exports: [PostService]  // Exporta el servicio para uso externo (por ejemplo, desde UsersModule)
 })
 
 export class PostsModule {}
