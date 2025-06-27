@@ -76,7 +76,8 @@ export class UsersService {
         
         // Construye URL completa si existe imagen
         if (user.imagenPerfil) {
-            user.imagenPerfil = `http://localhost:3000/${user.imagenPerfil.replace(/^uploads[\\/]/, '')}`;
+            user.imagenPerfil = `http://localhost:3000/uploads/${user.imagenPerfil.replace(/^uploads[\\/]/, '')}`;
+
         }
         
         return user as User;
