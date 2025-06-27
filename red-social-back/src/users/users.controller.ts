@@ -7,9 +7,9 @@ import { PostService } from 'src/posts/post.service';
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
-    constructor(private readonly usersService: UsersService, private readonly postService: PostService) {}
+  constructor(private readonly usersService: UsersService, private readonly postService: PostService) {}
 
-    @Get('me')
+  @Get('me')
   @UseGuards(JwtAuthGuard)
   async getCurrentUser(@Request() req) {
     return this.usersService.getCurrentUser(req.user.sub);

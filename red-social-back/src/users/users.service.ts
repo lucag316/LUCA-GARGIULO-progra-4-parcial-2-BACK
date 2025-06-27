@@ -36,7 +36,16 @@ export class UsersService {
             throw new NotFoundException('Usuario no encontrado');
         }
         
+        // Construye URL completa si existe imagen
+        if (user.imagenPerfil) {
+            user.imagenPerfil = `http://localhost:3000/${user.imagenPerfil.replace(/^uploads[\\/]/, '')}`;
+        }
+        
         return user as User;
+    }
+
+    private getBaseUrl(): string {
+        return process.env.BASE_URL || 'http://localhost:3000';
     }
 
     async getUserPosts(userId: string, limit: number = 3): Promise<any> {

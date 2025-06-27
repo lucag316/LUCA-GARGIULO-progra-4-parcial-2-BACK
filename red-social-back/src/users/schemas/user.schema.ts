@@ -37,8 +37,13 @@ export class User {
     @Prop()
     descripcion: string;
 
-    @Prop({ default: null })
-    imagenPerfil: string;
+    // SOLUCIÓN PARA imagenPerfil:
+    @Prop({ 
+        type: String,  // Tipo explícito para Mongoose
+        default: null, // Valor por defecto
+        required: false // Campo opcional
+    })
+    imagenPerfil?: string; // El "?" indica que es opcional en TypeScript
 
     @Prop({ default: 'usuario' })
     perfil: string;

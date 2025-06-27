@@ -114,40 +114,46 @@ export class AuthService {
         }
     }
 
+    
     async login(correoOrUsername: string, password: string) {
         const user = await this.userModel.findOne({
             $or: [
-            { email: correoOrUsername.toLowerCase() },
-            { username: correoOrUsername },
+                { email: correoOrUsername.toLowerCase() },
+                { username: correoOrUsername },
             ],
-        });
+        }).lean().exec();
 
-        if (!user) {
-            throw new UnauthorizedException('Usuario o email incorrecto');
-        }
+        if (!user) throw new UnauthorizedException('Usuario o email incorrecto');
 
         const passwordValida = await bcrypt.compare(password, user.password);
+        if (!passwordValida) throw new UnauthorizedException('Contraseña incorrecta');
 
-        if (!passwordValida) {
-            throw new UnauthorizedException('Contraseña incorrecta');
-        }
+        // Manejo de imagen (undefined o string)
+        const imagenPerfilCompleta = user.imagenPerfil 
+            ? `http://localhost:3000/${user.imagenPerfil.replace(/^uploads[\\/]/, '')}`
+            : undefined;
 
         const payload = {
             sub: user._id,
             email: user.email,
             username: user.username,
             perfil: user.perfil,
+            imagenPerfil: imagenPerfilCompleta,
+            nombre: user.nombre,
+            apellido: user.apellido
         };
 
         const token = this.jwtService.sign(payload);
-
-        const { password: _, ...userSinPassword } = user.toObject();
 
         return {
             success: true,
             message: 'Login exitoso',
             data: {
-                user: userSinPassword,
+                user: {
+                    ...user,
+                    _id: user._id.toString(),
+                    imagenPerfil: imagenPerfilCompleta
+                },
                 token,
             },
         };
