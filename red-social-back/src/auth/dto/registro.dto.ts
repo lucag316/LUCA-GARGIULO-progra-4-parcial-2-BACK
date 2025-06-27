@@ -1,3 +1,17 @@
+/**
+ * DTO para el registro de nuevos usuarios en la red social.
+ * Se encarga de validar los datos recibidos desde el frontend 
+ * antes de ser procesados y almacenados en la base de datos.
+ *
+ * Validaciones incluidas:
+ * - Nombre, apellido y username con longitud mínima/máxima y tipo string.
+ * - Email válido.
+ * - Contraseña con al menos 8 caracteres, una mayúscula y un número.
+ * - Fecha de nacimiento en formato ISO (YYYY-MM-DD).
+ * - Descripción opcional.
+ */
+
+
 import {
     IsString,
     IsEmail,
@@ -11,22 +25,26 @@ import {
 
 export class RegistroDto {
 
+    // Nombre del usuario: obligatorio, texto entre 2 y 50 caracteres
     @IsNotEmpty({message: 'El nombre es obligatorio'})
     @IsString({message: 'El nombre debe ser texto'})
     @MinLength(2, {message: 'El nombre debe tener al menos 2 caracteres'})
     @MaxLength(50, {message: 'El nombre debe tener máximo 50 caracteres'})
     nombre: string;
 
+    // Apellido del usuario: obligatorio, texto entre 2 y 50 caracteres
     @IsNotEmpty({message: 'El apellido es obligatorio'})
     @IsString({message: 'El apellido debe ser texto'})
     @MinLength(2, {message: 'El apellido debe tener al menos 2 caracteres'})
     @MaxLength(50, {message: 'El apellido debe tener máximo 50 caracteres'})
     apellido: string;
 
+    // Email: obligatorio, debe tener formato de correo electrónico válido
     @IsNotEmpty({message: 'El email es obligatorio'})
     @IsEmail({},{message: 'El email debe ser válido'})
     email: string;
 
+    // Nombre de usuario: obligatorio, texto entre 3 y 20 caracteres, solo letras, números y guiones bajos
     @IsNotEmpty({message: 'El nombre de usuario es obligatorio'})
     @IsString({message: 'El nombre de usuario debe ser texto'})
     @MinLength(3, {message: 'El nombre de usuario debe tener al menos 3 caracteres'})
@@ -34,16 +52,19 @@ export class RegistroDto {
     @Matches(/^[a-zA-Z0-9_]*$/, {message: 'El nombre de usuario solo puede contener letras, números y guiones bajos'})
     username: string;
 
+    // Contraseña: obligatoria, mínimo 8 caracteres, al menos una mayúscula y un número
     @IsNotEmpty({message: 'La contraseña es obligatoria'})
     @MinLength(8, {message: 'La contraseña debe tener al menos 8 caracteres'})
     @Matches(/(?=.*[A-Z])/, { message: 'Debe tener una mayúscula' })
     @Matches(/(?=.*\d)/, { message: 'Debe tener un número' })
     password: string;
     
+    // Fecha de nacimiento: obligatoria, debe estar en formato fecha ISO
     @IsNotEmpty({ message: 'La fecha de nacimiento es obligatoria' })
     @IsDateString({}, { message: 'Debe tener formato YYYY-MM-DD' })
     fechaNacimiento: string;
 
+    // Descripción del usuario: opcional, debe ser texto
     @IsOptional()
     @IsString({message: 'La descripción debe ser texto'})
     descripcion: string;
