@@ -21,6 +21,10 @@ import { RegistroDto } from "./dto/registro.dto";
 import { LoginDto } from "./dto/login.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { FileValidationPipe } from "src/common/pipes/file-validation.pipe";
+import { JwtAuthGuard } from "./guards/jwt-auth.guard";
+import { HttpStatus } from "@nestjs/common";
+import { HttpCode } from "@nestjs/common";
+import { UnauthorizedException } from "@nestjs/common";
 
 @Controller('auth')
 export class AuthController {
@@ -55,6 +59,25 @@ export class AuthController {
     async login(@Body() loginDto: LoginDto) {
         const { correoOrUsername, password } = loginDto;
         return this.authService.login(correoOrUsername, password);
+    }
+
+    @Post('autorizar')
+    @HttpCode(HttpStatus.OK)
+    async authorize(@Body() body: { token: string }) {
+        try {
+            const user = await this.authService.validateToken(body.token);
+            return { 
+            valid: true, 
+            user: {
+                _id: user._id.toString(), // Convertir ObjectId a string
+                email: user.email,
+                username: user.username,
+                role: user.perfil
+            }
+            };
+        } catch (error) {
+            throw new UnauthorizedException('Token inválido o expirado');
+        }
     }
 }
 

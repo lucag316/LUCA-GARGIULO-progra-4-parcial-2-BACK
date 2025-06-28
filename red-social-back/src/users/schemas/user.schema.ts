@@ -16,11 +16,12 @@
  */
 
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document } from "mongoose";
+import { Document, Types } from "mongoose";
 import { ApiProperty } from "@nestjs/swagger";
 
 // Tipo para usar en servicios con tipado fuerte
-export type UserDocument = User & Document;
+export type UserDocument = User & Document & { _id: Types.ObjectId}; // Añade esto explícitamente
+
 
 // Decorador de esquema con configuración global
 @Schema({ 

@@ -93,7 +93,7 @@ export class AuthService {
                 perfil: savedUser.perfil,
             };
 
-            const token = this.jwtService.sign(payload);
+            const token = this.jwtService.sign(payload, { expiresIn: '15m' });
 
             // convertir objetos y eliminar la costraseña de la respuesta
             const userObject = savedUser.toObject();
@@ -173,7 +173,7 @@ export class AuthService {
             apellido: user.apellido
         };
 
-        const token = this.jwtService.sign(payload);
+        const token = this.jwtService.sign(payload, { expiresIn: '15m' });
 
         return {
             success: true,
@@ -230,5 +230,20 @@ export class AuthService {
             },
             { $project: { publicaciones: 1 } },
         ]);
+    }
+
+    async validateToken(token: string): Promise<UserDocument> { // Usar UserDocument en lugar de User
+        try {
+            const payload = this.jwtService.verify(token);
+            const user = await this.userModel.findById(payload.sub).exec();
+            
+            if (!user) {
+            throw new Error('Usuario no encontrado');
+            }
+            
+            return user;
+        } catch (error) {
+            throw new UnauthorizedException('Token inválido o expirado');
+        }
     }
 }
