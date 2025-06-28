@@ -79,5 +79,19 @@ export class AuthController {
             throw new UnauthorizedException('Token inválido o expirado');
         }
     }
+
+    @Post('refrescar')
+    @HttpCode(HttpStatus.OK)
+    async refresh(@Body() body: { token: string }) {
+        try {
+            const { newToken } = await this.authService.refreshToken(body.token);
+            return { 
+                success: true,
+                newToken 
+            };
+        } catch (error) {
+            throw new UnauthorizedException(error.message);
+        }
+    }
 }
 

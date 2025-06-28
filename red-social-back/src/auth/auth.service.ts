@@ -188,6 +188,39 @@ export class AuthService {
             },
         };
     }
+    // Añade este método a tu AuthService
+    async refreshToken(token: string): Promise<{ newToken: string }> {
+        try {
+            // 1. Verificar token existente (incluye chequeo de expiración)
+            const payload = this.jwtService.verify(token);
+            
+            // 2. Verificar usuario aún existe
+            const user = await this.userModel.findById(payload.sub);
+            if (!user) {
+                throw new UnauthorizedException('Usuario no encontrado');
+            }
+
+            // 3. Crear nuevo payload (misma data)
+            const newPayload = {
+                sub: payload.sub,       // ID usuario
+                email: payload.email,   // Mismo email
+                username: payload.username, // Mismo username
+                perfil: payload.perfil,  // Mismo rol
+                imagenPerfil: payload.imagenPerfil,
+                nombre: payload.nombre,
+                apellido: payload.apellido
+            };
+
+            // 4. Generar nuevo token (15 mins)
+            const newToken = this.jwtService.sign(newPayload, { expiresIn: '15m' });
+
+            return { newToken };
+            
+        } catch (error) {
+            // Captura errores de verificación (token inválido/vencido)
+            throw new UnauthorizedException('Token no puede ser refrescado');
+        }
+    }
 
     /**
      * Obtiene perfil de usuario sin información sensible
