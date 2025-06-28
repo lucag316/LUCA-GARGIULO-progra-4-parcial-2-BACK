@@ -11,7 +11,7 @@
  * Todas las rutas están protegidas con `JwtAuthGuard`, por lo tanto solo usuarios autenticados pueden acceder.
  */
 
-import { Controller, Post, Body, Get, Delete, Param, Query, Req, UseGuards, UseInterceptors, UploadedFile,BadRequestException } from "@nestjs/common";
+import { Controller, Post, Body, Get, Delete, Put, Param, Query, Req, UseGuards, UseInterceptors, UploadedFile,BadRequestException } from "@nestjs/common";
 import { PostService } from "./post.service";
 import { CreatePostDto } from "./dto/create-post.dto";
 import { GetPostDto } from "./dto/get-post.dto";
@@ -20,6 +20,7 @@ import { FileValidationPipe } from "src/common/pipes/file-validation.pipe";
 import { Request } from "express"; // Para acceder a req.user desde JWT
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { isValidObjectId } from "mongoose";
+import { CreateCommentDto } from "./dto/create-comment.dto";
 
 @Controller('posts')
 @UseGuards(JwtAuthGuard) // // Aplica el guard a todas las rutas del controlador / Protege todas las rutas del controlador con JWT
@@ -116,4 +117,42 @@ export class PostController {
         const userId = user.sub;
         return this.postService.removeLike(postId, userId); // Elimina el userId del array de likes
     }
+
+    @Post(':id/comentarios')
+    //@UseGuards(JwtAuthGuard)
+    async addComment(
+        @Param('id') postId: string,
+        @Body() createCommentDto: CreateCommentDto,
+        @Req() req: Request
+    ) {
+        const user = req.user as { sub: string };
+        const userId = user.sub;
+        return this.postService.addComment(postId, userId, createCommentDto.contenido);
+    }
+
+    @Put(':postId/comentarios/:comentarioId')
+    //@UseGuards(JwtAuthGuard)
+    async updateComment(
+    @Param('postId') postId: string,
+    @Param('comentarioId') comentarioId: string,
+    @Body() updateCommentDto: CreateCommentDto,
+    @Req() req: Request
+    ) {
+        const user = req.user as { sub: string };
+        const userId = user.sub;
+        return this.postService.updateComment(postId, comentarioId, userId, updateCommentDto.contenido);
+    }
+
+    @Get(':postId/comentarios')
+    async getComentarios(
+        @Param('postId') postId: string,
+        @Query('offset') offset: string = '0',
+        @Query('limit') limit: string = '5'
+    ) {
+        const off = parseInt(offset);
+        const lim = parseInt(limit);
+        return this.postService.getComentarios(postId, off, lim);
+    }
+
+    
 }

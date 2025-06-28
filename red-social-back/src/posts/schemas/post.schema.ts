@@ -19,6 +19,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 import { User } from 'src/users/schemas/user.schema';
 import { ApiProperty } from '@nestjs/swagger';
+import { Types } from 'mongoose';
 
 // Tipo para trabajar con el documento en servicios
 export type PostDocument = Post & Document;
@@ -79,13 +80,16 @@ export class Post {
         {
         contenido: { type: String, required: true },
         autor: { type: MongooseSchema.Types.ObjectId, ref: 'User', required: true },
-        fechaCreacion: { type: Date, default: Date.now }
+        fechaCreacion: { type: Date, default: Date.now },
+        modificado: { type: Boolean, default: false }
         }
-    ])
+    ])// PODRIA DESPUES HACER UNA INTERFAZ DE COMENTARIO
     comentarios: {
+        _id?: Types.ObjectId;
         contenido: string;
         autor: User;
         fechaCreacion: Date;
+        modificado?: boolean;
     }[];
 }
 

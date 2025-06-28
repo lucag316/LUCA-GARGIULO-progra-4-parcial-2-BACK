@@ -19,6 +19,7 @@ import { GetPostDto, SortBy } from './dto/get-post.dto';
 import { UsersService } from 'src/users/users.service';
 import { forwardRef, Inject } from '@nestjs/common';
 
+
 @Injectable()
 export class PostService {
     constructor(
@@ -256,4 +257,83 @@ export class PostService {
         return updatePost;
     }
 
+
+    async addComment(postId: string, userId: string, contenido: string): Promise<Post> {
+        if (!Types.ObjectId.isValid(postId)) {
+            throw new NotFoundException('ID de publicación inválido');
+        }
+
+        const comentario = {
+            contenido,
+            autor: new Types.ObjectId(userId),
+            fechaCreacion: new Date(),
+            modificado: false
+        };
+
+        const updatedPost = await this.postModel.findByIdAndUpdate(
+            postId,
+            { $push: { comentarios: comentario } },
+            { new: true }
+        )
+        .populate('comentarios.autor', 'username imagenPerfil') // opcional
+        .exec();
+
+        if (!updatedPost) {
+            throw new NotFoundException('Publicación no encontrada');
+        }
+
+        return updatedPost;
+    }
+
+    async updateComment(postId: string, comentarioId: string, userId: string, nuevoContenido: string): Promise<Post> {
+        if (!Types.ObjectId.isValid(postId) || !Types.ObjectId.isValid(comentarioId)) {
+            throw new NotFoundException('ID inválido');
+        }
+
+        const post = await this.postModel.findById(postId).exec();
+        if (!post) {
+            throw new NotFoundException('Publicación no encontrada');
+        }
+
+        const comentario = post.comentarios.find(c => c._id?.toString() === comentarioId);
+        if (!comentario) {
+            throw new NotFoundException('Comentario no encontrado');
+        }
+
+        // Verificar que el autor del comentario sea el mismo que quien lo intenta editar
+        if (comentario.autor.toString() !== userId) {
+            throw new ForbiddenException('No tienes permiso para editar este comentario');
+        }
+
+        comentario.contenido = nuevoContenido;
+        comentario.modificado = true;
+
+        const updatedPost = await post.save();
+        return updatedPost;
+    }
+
+    async getComentarios(postId: string, offset = 0, limit = 5) {
+        if (!Types.ObjectId.isValid(postId)) {
+            throw new NotFoundException('ID de publicación inválido');
+        }
+
+        const post = await this.postModel.findById(postId)
+            .populate('comentarios.autor', 'username imagenPerfil')
+            .lean();
+
+        if (!post) {
+            throw new NotFoundException('Publicación no encontrada');
+        }
+
+        // Ordenar por fecha descendente y aplicar paginación manual
+        const comentariosOrdenados = (post.comentarios || [])
+            .sort((a, b) => new Date(b.fechaCreacion).getTime() - new Date(a.fechaCreacion).getTime())
+            .slice(offset, offset + limit);
+
+        return {
+            total: post.comentarios?.length || 0,
+            comentarios: comentariosOrdenados
+        };
+    }
+    
 }
