@@ -93,7 +93,7 @@ export class AuthService {
                 perfil: savedUser.perfil,
             };
 
-            const token = this.jwtService.sign(payload, { expiresIn: '15m' });
+            const token = this.generarToken(payload);
 
             // convertir objetos y eliminar la costraseña de la respuesta
             const userObject = savedUser.toObject();
@@ -173,7 +173,7 @@ export class AuthService {
             apellido: user.apellido
         };
 
-        const token = this.jwtService.sign(payload, { expiresIn: '15m' });
+        const token = this.generarToken(payload);
 
         return {
             success: true,
@@ -212,7 +212,7 @@ export class AuthService {
             };
 
             // 4. Generar nuevo token (15 mins)
-            const newToken = this.jwtService.sign(newPayload, { expiresIn: '15m' });
+            const newToken = this.generarToken(payload);
 
             return { newToken };
             
@@ -278,5 +278,9 @@ export class AuthService {
         } catch (error) {
             throw new UnauthorizedException('Token inválido o expirado');
         }
+    }
+
+    generarToken(payload: any): string {
+        return this.jwtService.sign(payload, { expiresIn: '15m' });
     }
 }

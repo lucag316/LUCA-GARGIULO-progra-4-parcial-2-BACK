@@ -15,16 +15,14 @@
  * - AuthService para la lógica de negocio
  */
 
-import { Controller, Post, Body, UseInterceptors, UploadedFile } from "@nestjs/common";
+import { Controller, Post, Body, UseInterceptors, UploadedFile, UseGuards, Request, HttpCode, HttpStatus, UnauthorizedException 
+ } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { RegistroDto } from "./dto/registro.dto";
 import { LoginDto } from "./dto/login.dto";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { FileValidationPipe } from "src/common/pipes/file-validation.pipe";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
-import { HttpStatus } from "@nestjs/common";
-import { HttpCode } from "@nestjs/common";
-import { UnauthorizedException } from "@nestjs/common";
 
 @Controller('auth')
 export class AuthController {
@@ -61,37 +59,38 @@ export class AuthController {
         return this.authService.login(correoOrUsername, password);
     }
 
+    /**
+   * Valida si un token es válido y devuelve los datos del usuario
+   * Header: Authorization: Bearer <token>
+   */
+    @UseGuards(JwtAuthGuard)
     @Post('autorizar')
     @HttpCode(HttpStatus.OK)
-    async authorize(@Body() body: { token: string }) {
-        try {
-            const user = await this.authService.validateToken(body.token);
-            return { 
-            valid: true, 
-            user: {
-                _id: user._id.toString(), // Convertir ObjectId a string
-                email: user.email,
-                username: user.username,
-                role: user.perfil
-            }
-            };
-        } catch (error) {
-            throw new UnauthorizedException('Token inválido o expirado');
+    async authorize(@Request() req) {
+        const user = req.user;
+        return {
+        valid: true,
+        user: {
+            _id: user._id,
+            username: user.username,
+            email: user.email,
+            role: user.perfil
         }
+        };
     }
 
+    /**
+   * Refresca el token si es válido. Devuelve un nuevo token con 15 min de expiración
+   * Header: Authorization: Bearer <token>
+   */
+    @UseGuards(JwtAuthGuard)
     @Post('refrescar')
     @HttpCode(HttpStatus.OK)
-    async refresh(@Body() body: { token: string }) {
-        try {
-            const { newToken } = await this.authService.refreshToken(body.token);
-            return { 
-                success: true,
-                newToken 
-            };
-        } catch (error) {
-            throw new UnauthorizedException(error.message);
-        }
+    async refresh(@Request() req) {
+        const user = req.user;
+        const newToken = this.authService.generarToken(user);
+        return { success: true, token: newToken };
     }
 }
+
 
