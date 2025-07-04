@@ -21,6 +21,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from './schemas/user.schema';
 import { Post } from 'src/posts/schemas/post.schema';
+import { HttpException, HttpStatus } from '@nestjs/common';
+import * as bcrypt from 'bcryptjs';
+import { CreateUserAdminDto } from './dto/createUserAdmin.dto';
+
+
 
 @Injectable()
 export class UsersService {
@@ -106,4 +111,48 @@ export class UsersService {
     private getBaseUrl(): string {
         return process.env.BASE_URL || 'http://localhost:3000';
     }
+
+     /** 🟢 Lista todos los usuarios (solo admin) */
+    async listarTodos(): Promise<Omit<User, 'password'>[]> {
+        return this.userModel.find().select('-password');
+    }
+
+
+/** 🟢 Crea un nuevo usuario manual (desde admin) */
+    async crearManual(data: CreateUserAdminDto): Promise<User> {
+    if (!data.password) {
+        throw new Error('La contraseña es obligatoria para crear el usuario');
+    }
+
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+
+    const nuevo = new this.userModel({
+        ...data,
+        fechaNacimiento: new Date(data.fechaNacimiento), // <-- conversión aquí
+        password: hashedPassword,
+        isActive: true,
+        perfil: data.perfil ?? 'usuario', // por defecto será usuario si no se especifica
+    });
+
+    return nuevo.save();
+    }
+
+ /** 🟡 Desactiva (baja lógica) */
+  async bajaLogica(id: string): Promise<User> {
+    const user = await this.userModel.findById(id);
+    if (!user) {
+      throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
+    }
+    user.isActive = false;
+    return user.save();
+  }
+/** 🟢 Activa (alta lógica) */
+  async altaLogica(id: string): Promise<User> {
+    const user = await this.userModel.findById(id);
+    if (!user) {
+      throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
+    }
+    user.isActive = true;
+    return user.save();
+  }
 }

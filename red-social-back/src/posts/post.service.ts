@@ -319,7 +319,7 @@ export class PostService {
 
         const post = await this.postModel.findById(postId)
             .populate('comentarios.autor', 'username imagenPerfil')
-            .lean();
+            .lean(); //  para realizar consultas a bases de datos de una manera más eficiente
 
         if (!post) {
             throw new NotFoundException('Publicación no encontrada');

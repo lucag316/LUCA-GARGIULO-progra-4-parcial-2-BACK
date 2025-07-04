@@ -28,7 +28,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
 
             // Si el token está vencido, se rechaza automáticamente
-            ignoreExpiration: false,
+            ignoreExpiration: false, 
 
             // Secreto JWT desde archivo .env (via ConfigService)
             secretOrKey: configService.get<string>('JWT_SECRET')!, 

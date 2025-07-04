@@ -17,10 +17,12 @@
      * - `@ApiTags` y `@ApiBearerAuth` documentan el uso del token en Swagger.
  */
 
-import { Controller, Get, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, UseGuards, Request, Post, Put, Body, Param, Delete, HttpException, HttpStatus } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { JwtAdminGuard } from '../auth/guards/jwt-admin.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { CreateUserAdminDto } from '../users/dto/createUserAdmin.dto';
 
 @ApiTags('Users') // Agrupación de endpoints en Swagger
 @ApiBearerAuth() // Requiere token JWT en Swagger UI
@@ -51,5 +53,34 @@ export class UsersController {
     @UseGuards(JwtAuthGuard)
     async getUserPosts(@Request() req) {
         return this.usersService.getUserPosts(req.user.sub);
+    }
+
+    // 🆕 RUTA ADMIN: listar todos los usuarios
+    @Get()
+    @UseGuards(JwtAuthGuard, JwtAdminGuard)
+    async listarUsuarios() {
+        return this.usersService.listarTodos();
+    }
+
+    // 🆕 RUTA ADMIN: crear nuevo usuario
+    @Post()
+    @UseGuards(JwtAuthGuard, JwtAdminGuard)
+    async crearUsuario(@Body() data: CreateUserAdminDto) {
+    // Lógica para normalizar, validar, etc
+        return this.usersService.crearManual(data);
+    }
+
+    // 🆕 RUTA ADMIN: baja lógica (deshabilitar)
+    @Delete(':id')
+    @UseGuards(JwtAuthGuard, JwtAdminGuard)
+    async deshabilitarUsuario(@Param('id') id: string) {
+        return this.usersService.bajaLogica(id);
+    }
+
+    // 🆕 RUTA ADMIN: alta lógica (rehabilitar)
+    @Post('rehabilitar/:id')
+    @UseGuards(JwtAuthGuard, JwtAdminGuard)
+    async rehabilitarUsuario(@Param('id') id: string) {
+        return this.usersService.altaLogica(id);
     }
 }

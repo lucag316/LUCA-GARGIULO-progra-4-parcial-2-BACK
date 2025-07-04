@@ -63,7 +63,6 @@ export class AuthService {
                 }
             }
 
-
             // encriptar la contraseña con salt de 12 rounds
             const saltRounds = 12; // para la complejidad
             const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -154,6 +153,10 @@ export class AuthService {
         }).lean().exec();
 
         if (!user) throw new UnauthorizedException('Usuario o email incorrecto');
+
+        if (!user.isActive) {
+            throw new UnauthorizedException('Usuario deshabilitado');
+        }
 
         const passwordValida = await bcrypt.compare(password, user.password);
         if (!passwordValida) throw new UnauthorizedException('Contraseña incorrecta');
