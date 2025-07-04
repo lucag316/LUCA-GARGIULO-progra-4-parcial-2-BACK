@@ -17,6 +17,8 @@ import { PostService } from './post.service';
 import { Post, PostSchema } from './schemas/post.schema';
 import { AuthModule } from 'src/auth/auth.module';
 import { UsersModule } from 'src/users/users.module';
+import { EstadisticasController } from './estadisticas/estadisticas.controller';
+import { EstadisticasService } from './estadisticas/estadisticas.service';
 
 @Module({
     imports: [
@@ -29,9 +31,9 @@ import { UsersModule } from 'src/users/users.module';
         // Importa AuthModule usando forwardRef (por uso en validaciones o JWT helpers)
         forwardRef(() => AuthModule),
     ],
-    controllers: [PostController], // Define las rutas disponibles
-    providers: [PostService], // Servicio que contiene la lógica de publicaciones
-    exports: [PostService]  // Exporta el servicio para uso externo (por ejemplo, desde UsersModule)
+    controllers: [PostController, EstadisticasController], // Define las rutas disponibles
+    providers: [PostService, EstadisticasService], // Servicio que contiene la lógica de publicaciones
+    exports: [PostService, EstadisticasService]  // Exporta el servicio para uso externo (por ejemplo, desde UsersModule)
 })
 
 export class PostsModule {}
