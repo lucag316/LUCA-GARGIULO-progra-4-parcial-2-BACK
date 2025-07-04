@@ -115,6 +115,15 @@ export class PostService {
         return { posts, total };
     }
 
+    async bajaLogica(postId: string) {
+  // Marcar como eliminada sin borrar
+        return await this.postModel.findByIdAndUpdate(
+            postId,
+            { estaEliminado: true },
+            { new: true }
+        );
+    }
+
     /**
      * Devuelve una publicación por su ID, validando que no esté eliminada.
      */

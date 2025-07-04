@@ -21,6 +21,7 @@ import { Request } from "express"; // Para acceder a req.user desde JWT
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { isValidObjectId } from "mongoose";
 import { CreateCommentDto } from "./dto/create-comment.dto";
+import { JwtAdminGuard } from "src/auth/guards/jwt-admin.guard";
 
 @Controller('posts')
 @UseGuards(JwtAuthGuard) // // Aplica el guard a todas las rutas del controlador / Protege todas las rutas del controlador con JWT
@@ -154,5 +155,13 @@ export class PostController {
         return this.postService.getComentarios(postId, off, lim);
     }
 
-    
+    /**
+     * POST /posts/:id/deshabilitar
+     * Permite a un ADMIN deshabilitar (baja lógica) una publicación
+     */
+    @Post(':id/deshabilitar')
+    @UseGuards(JwtAuthGuard, JwtAdminGuard)
+    async deshabilitarPost(@Param('id') id: string) {
+        return this.postService.bajaLogica(id);
+    }
 }
