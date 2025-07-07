@@ -7,15 +7,12 @@ Implementa validaciones robustas, arquitectura modular y comunicación segura co
 
 ---
 
-## 📋 Índice
+## 📋 Indice
 
 - [👨‍💼 Información del Proyecto](#-información-del-proyecto)
 - [🔗 Links importantes](#-links-importantes)
 - [🔧 Tecnologías utilizadas](#-tecnologías-utilizadas)
-- [🎯 Objetivo General](#-objetivo-general)
 - [🌟 Características generales](#-características-generales)
-- [👩‍💻 Estructura del proyecto](#-estructura-del-proyecto)
-- [🧼 Endpoints principales](#-endpoints-principales)
 - [🤝 Funcionalidades por Sprint](#-funcionalidades-por-sprint)
 
 ---
@@ -210,4 +207,4 @@ Sprint final con enfoque en administración y analítica:
 
 ✅ **Estado final:** El backend cumple con todas las funcionalidades requeridas en cada sprint. Cuenta con validaciones sólidas, control de acceso, lógica robusta, modularización limpia y está 100% integrado con el frontend Angular de la aplicación.
 
-📌 [Volver al índice](#📋-índice)
+📌 [Volver al índice](#-indice)
