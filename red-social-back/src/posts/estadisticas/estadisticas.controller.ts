@@ -16,14 +16,17 @@ export class EstadisticasController {
     return this.estadisticasService.publicacionesPorUsuario(desde, hasta);
   }
 
-  // 2) Cantidad total de comentarios en rango
-  @Get('comentarios-totales')
-  async comentariosTotales(
+// 2) Cantidad total de comentarios en rango
+    @Get('comentarios-totales')
+    async comentariosTotales(
     @Query('desde') desde: string,
     @Query('hasta') hasta: string,
-  ) {
-    return this.estadisticasService.comentariosTotales(desde, hasta);
-  }
+    ) {
+    const total = await this.estadisticasService.comentariosTotales(desde, hasta);
+
+    // Suponiendo que `total` es un número, lo envolvemos en un objeto
+    return { totalComentarios: total };
+    }
 
   // 3) Cantidad de comentarios por publicación en rango
   @Get('comentarios-por-publicacion')
